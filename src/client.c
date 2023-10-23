@@ -20,7 +20,7 @@ void* handle_incoming(void* arg) {
 		int r = read(sockfd, buffer, sizeof(buffer));
 		if (r == 0) exit(1);
 		printf("\x1b[2K"); 
-		printf("Server: %s", buffer);
+		printf("\rServer: %s", buffer);
 		fflush(stdout);
 		printf("Client: ");
 		fflush(stdout);

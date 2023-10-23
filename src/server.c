@@ -11,6 +11,7 @@
 #define BUFF_SZ 1024
 
 char buffer_inp[BUFF_SZ];
+int n;
 
 void* handle_incoming(void* arg) {
     int connfd = *(int*)arg;
@@ -19,10 +20,11 @@ void* handle_incoming(void* arg) {
 	bzero(buffer, sizeof(buffer));
 	int r = read(connfd, buffer, sizeof(buffer));
 	if (r == 0) exit(1);
+	buffer_inp[n] = '\0';
 	printf("\x1b[2K"); 
-	printf("Client: %s", buffer);
+	printf("\rClient: %s", buffer);
 	fflush(stdout);
-	printf("Server: ");
+	printf("Server: %s", buffer_inp);
 	fflush(stdout);
     }
 
@@ -33,14 +35,14 @@ int start_server(int connfd) {
     pthread_t thid;
     pthread_create(&thid, NULL, &handle_incoming, &connfd);
 
-    int chars;
     for (;;) {
-	chars = 0;
+	n = 0;
 	bzero(buffer_inp, sizeof(buffer_inp));
 
 	printf("Server: ");
 	fflush(stdout);
-	while ((buffer_inp[chars++] = getchar()) != '\n') {}
+	while ((buffer_inp[n++] = getchar()) != '\n') {}
+	fflush(stdout);
 	write(connfd, buffer_inp, sizeof(buffer_inp));
     }
     
@@ -63,6 +65,7 @@ int main(int argc, char** argv) {
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    printf("Setting IP.\n");
     servaddr.sin_port = htons(PORT);
 
     if ((bind(sockfd, (SA*)&servaddr, sizeof(servaddr))) != 0) {
