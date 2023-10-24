@@ -1,2 +1,2 @@
-# toutchat
+# buglog
 Distributed chatting service.
