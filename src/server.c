@@ -25,7 +25,7 @@ void* from_client(void* arg) {
 	printf("\x1b[2K"); 
 	printf("\rClient: %s", buffer);
 	fflush(stdout);
-	printf("You: %s", buffer_inp_server);
+	printf("\nYou: %s", buffer_inp_server);
 	fflush(stdout);
     }
 
@@ -40,8 +40,6 @@ int start_server(int connfd) {
     for (;;) {
 	n = 0;
 	bzero(buffer_inp_server, sizeof(buffer_inp_server));
-	buffer_inp_server[0] = 'D';
-
 	printf("You: ");
 	fflush(stdout);
 	while ((buffer_inp_server[n++] = getchar()) != '\n') {}
