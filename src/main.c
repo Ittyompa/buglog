@@ -12,12 +12,12 @@
 #define SA struct sockaddr
 
 int main(int argc, char** argv) {
-	if (argc != 3) {
+	if (argc != 4) {
 		printf("Too few arguments!\n");
 		return 1;
 	}
 
-	const int PORT = atoi(argv[2]);
+	const int PORT = atoi(argv[3]);
 	int sockfd, connfd, len;
 	struct sockaddr_in servaddr, cli;
 
@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
 
 	bzero(&servaddr, sizeof(servaddr));
 	servaddr.sin_family = AF_INET;
-	servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	servaddr.sin_addr.s_addr = inet_addr(argv[2]);
 	servaddr.sin_port = htons(PORT);
 
 	// binder socket

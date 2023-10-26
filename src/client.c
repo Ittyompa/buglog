@@ -8,23 +8,13 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <termios.h>
+#include "utils.h"
 
 #define SA struct sockaddr
 #define BUFF_SZ 1024
 
 char buffer_inp_client[BUFF_SZ];
 int m;
-
-void setNonBlockingInput() {
-    struct termios ttystate;
-
-    tcgetattr(STDIN_FILENO, &ttystate);
-    ttystate.c_lflag &= ~ICANON;
-    ttystate.c_lflag &= ~ECHO; 
-    ttystate.c_cc[VMIN] = 1;
-    ttystate.c_cc[VTIME] = 0;
-    tcsetattr(STDIN_FILENO, TCSANOW, &ttystate);
-}
 
 void* from_server(void* arg) {
     int sockfd = *(int*)arg;
@@ -34,7 +24,7 @@ void* from_server(void* arg) {
         int r = read(sockfd, buffer, sizeof(buffer));
         if (r == 0) exit(1);
 
-        printf("\x1b[2K\rServer: %s", buffer);
+        printf("\x1b[2K\rServer: %s\n", buffer);
         printf("You: %s", buffer_inp_client);
         fflush(stdout);
     }
@@ -58,7 +48,7 @@ int start_client(int sockfd) {
             } else if (c == 8 || c == 127) { 
                 if (m > 0) {
                     printf("\b \b"); 
-                    m--;
+                    --m;
                 }
             } else {
                 putchar(c); 
@@ -67,7 +57,6 @@ int start_client(int sockfd) {
         }
 
         if (m > 0) {
-            sleep(1);
             write(sockfd, buffer_inp_client, m);
             bzero(buffer_inp_client, sizeof(buffer_inp_client));
         }
