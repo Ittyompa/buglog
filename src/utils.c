@@ -8,8 +8,13 @@
 #include <pthread.h>
 #include <unistd.h> 
 #include <termios.h>
+#include "utils.h"
 
 #define SA struct sockaddr
+
+typedef struct {
+    int connfd;
+} ThreadArgs;
 
 void setNonBlockingInput() {
     struct termios ttystate;
@@ -21,3 +26,10 @@ void setNonBlockingInput() {
     ttystate.c_cc[VTIME] = 0;
     tcsetattr(STDIN_FILENO, TCSANOW, &ttystate);
 }
+
+void construct_message(Message* msg, char* input, int id_sender) {
+    strcpy(msg->input, input);
+    msg->id_sender = id_sender;
+}
+
+
