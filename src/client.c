@@ -36,23 +36,30 @@ void* from_server(void* arg) {
 }
 
 int start_client(int sockfd) {
+    // getting info from server
+    Message msg;
+    int r = recv(sockfd, (Message*)&msg, sizeof(msg), 0);
+    if (r == 0) exit(1);
+
+    Client client = msg.client;
+    int client_id = msg.id_reciever;
+
     pthread_t thid;
     pthread_create(&thid, NULL, &from_server, &sockfd);
     setNonBlockingInput();
     srand(time(0));
-    client_id = rand() % 32767;
 
     int m;
     for (;;) {
         m = 0;
-        printf("\nYou: ");
+        printf("\nYou(%d): ", client_id);
         fflush(stdout);
 
         while (1) {
             char c = getchar();
-            if (c == '\n' || c == EOF) {
+            if (c == '\n' || c == 0xffffffff) {
                 break;
-            } else if (c == 8 || c == 127) { 
+            } else if (c == 0x8 || c == 0x7F) { 
                 if (m > 0) {
                     printf("\b \b"); 
                     --m;
@@ -65,12 +72,13 @@ int start_client(int sockfd) {
 
         if (m > 0) {
             Message msg;
-            construct_message(&msg, buffer_inp_client, client_id);
+            construct_message(&msg, buffer_inp_client, client_id, (Client)client);
             send(sockfd, (void*)&msg, sizeof(msg), 0);
             sleep(1);
             bzero(buffer_inp_client, sizeof(buffer_inp_client));
         }
     }
+
     return 0;
 }
 

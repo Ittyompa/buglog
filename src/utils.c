@@ -8,6 +8,7 @@
 #include <pthread.h>
 #include <unistd.h> 
 #include <termios.h>
+#include <pthread.h>
 #include "utils.h"
 
 #define SA struct sockaddr
@@ -16,9 +17,11 @@ typedef struct {
     int connfd;
 } ThreadArgs;
 
+Client clients[64];
+int connections[64];
+
 void setNonBlockingInput() {
     struct termios ttystate;
-
     tcgetattr(STDIN_FILENO, &ttystate);
     ttystate.c_lflag &= ~ICANON;
     ttystate.c_lflag &= ~ECHO; 
@@ -27,9 +30,9 @@ void setNonBlockingInput() {
     tcsetattr(STDIN_FILENO, TCSANOW, &ttystate);
 }
 
-void construct_message(Message* msg, char* input, int id_sender) {
+void construct_message(Message* msg, char* input, int id_sender, Client client) {
     strcpy(msg->input, input);
     msg->id_sender = id_sender;
+    msg->client = client;
 }
-
 
