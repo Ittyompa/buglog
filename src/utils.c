@@ -18,7 +18,6 @@ typedef struct {
 } ThreadArgs;
 
 Client clients[64];
-int connections[64];
 
 void setNonBlockingInput() {
     struct termios ttystate;
@@ -35,4 +34,3 @@ void construct_message(Message* msg, char* input, int id_sender, Client client) 
     msg->id_sender = id_sender;
     msg->client = client;
 }
-

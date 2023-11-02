@@ -11,6 +11,7 @@
 
 #define SA struct sockaddr
 #define BUFF_SZ 320
+#define MAX_CLIENTS 64
 
 char buffer_inp_server[BUFF_SZ];
 struct sockaddr_in cli;
@@ -29,8 +30,14 @@ void* from_client(void* arg) {
             return NULL;
         }
 
-        for (int i = 0; i < 12; ++i) {
-            send(connections[i], &msg, sizeof(msg), 0);
+        for (int i = 0; i < MAX_CLIENTS; ++i) {
+            if (i == client.client_n) {
+                continue;
+            }
+            int r = send(clients[i].connfd, (Message*)&msg, sizeof(msg), 0);
+            if (r == 0) {
+                printf("Error echoing\n");
+            }
         }
 
         printf("\33[2k\r(%d): %s\n", msg.id_sender, msg.input);
@@ -48,11 +55,20 @@ void* start_server(void* arg) {
     Message msg;
     msg.id_reciever = client.id;
     msg.client = client;
-    send(connfd, (void*)&msg, sizeof(msg), 0);
+    send(connfd, (Message*)&msg, sizeof(msg), 0);
 
     pthread_t thid;
     pthread_create(&thid, NULL, from_client, arg);
     setNonBlockingInput();
+
+    char* join_msg; 
+    asprintf(&join_msg, "\e[1mInfo: %d joined the chat\e[m", client.id);
+    printf("%s", join_msg);
+    strcpy(msg.input, join_msg);
+    free(join_msg);
+    for (int i = 0; i < MAX_CLIENTS; ++i) {
+        send(clients[i].connfd, (Message*)&msg, sizeof(msg), 0);
+    }
 
     int n;
     for (;;) {
@@ -78,8 +94,10 @@ void* start_server(void* arg) {
         if (n > 0) {
             Message msg;
             construct_message(&msg, buffer_inp_server, 0, (Client)client); 
-            send(connfd, (void*)&msg, sizeof(msg), 0);
-            sleep(1);
+            int r = send(connfd, (void*)&msg, sizeof(msg), 0);
+            if (r == 0) {
+                return NULL;
+            }
             bzero(buffer_inp_server, sizeof(buffer_inp_server));
         }
     }

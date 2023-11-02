@@ -1,12 +1,11 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-
 typedef struct {
 	int connfd;
 	int client_n;
-	pthread_t thid;
 	int id;
+	int avail;
 } Client;
 
 typedef struct {
@@ -16,7 +15,6 @@ typedef struct {
 	Client client;
 } Message;
 
-extern int connections[64];
 extern Client clients[64];
 
 void setNonBlockingInput();

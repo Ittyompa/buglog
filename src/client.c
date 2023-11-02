@@ -24,11 +24,12 @@ void* from_server(void* arg) {
     Message msg;
     while (1) {
         bzero(buffer, sizeof(buffer));
-        int r = recv(sockfd, (Message*)&msg, sizeof(msg), 0);
-        if (r == 0) exit(1);
+        recv(sockfd, (Message*)&msg, sizeof(msg), 0);
 
-        printf("\33[2k\r(%d): %s\n", msg.id_sender, msg.input);
-        printf("You: %s", buffer_inp_client);
+        printf("\33[2K\r");
+        fflush(stdout);
+        printf("(%d): %s\n", msg.id_sender, msg.input);
+        printf("You(%d): %s", client_id, buffer_inp_client);
         fflush(stdout);
     }
 
@@ -42,7 +43,7 @@ int start_client(int sockfd) {
     if (r == 0) exit(1);
 
     Client client = msg.client;
-    int client_id = msg.id_reciever;
+    client_id = msg.id_reciever;
 
     pthread_t thid;
     pthread_create(&thid, NULL, &from_server, &sockfd);
@@ -74,7 +75,6 @@ int start_client(int sockfd) {
             Message msg;
             construct_message(&msg, buffer_inp_client, client_id, (Client)client);
             send(sockfd, (void*)&msg, sizeof(msg), 0);
-            sleep(1);
             bzero(buffer_inp_client, sizeof(buffer_inp_client));
         }
     }
