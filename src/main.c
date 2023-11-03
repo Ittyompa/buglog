@@ -30,6 +30,10 @@ int main(int argc, char** argv) {
     struct sockaddr_in servaddr;
     pthread_t thid[MAX_CLIENTS];
 
+    // for checking if clients disconnects
+    // pthread_t thid_self;
+    // thread_create(&thid_self, NULL, (void*)check_connection, &sockfd);
+
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd == -1) {
         perror("Failed to create socket");
@@ -52,10 +56,25 @@ int main(int argc, char** argv) {
         }
 
         int client_n = 0;
+        for (int i = 0; i < MAX_CLIENTS; ++i) {
+            avail[i] = 0;
+        }
+
         while (1) {
+
+            if (client_c == MAX_CLIENTS) {
+                client_c = 0;
+            }
+
             socklen_t len;
             
-            // todo: handle available clients;
+            for (int i = 0; i < MAX_CLIENTS; ++i) {
+                if (avail[i] != 1) {
+                    avail[i] = 1;
+                    break;
+                }
+                ++client_c;
+            }
 
             clients[client_c].connfd = accept(sockfd, (SA*)&servaddr, &len);
 

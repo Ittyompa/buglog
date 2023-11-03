@@ -16,8 +16,10 @@ typedef struct {
 } Message;
 
 extern Client clients[64];
+extern int avail[64];
 
 void setNonBlockingInput();
 void construct_message(Message* msg, char* input, int id_sender, Client client);
+void* check_connection(void* arg);
 
 #endif

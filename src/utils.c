@@ -12,12 +12,14 @@
 #include "utils.h"
 
 #define SA struct sockaddr
+#define MAX_CLIENTS 64
 
 typedef struct {
     int connfd;
 } ThreadArgs;
 
 Client clients[64];
+int avail[64];
 
 void setNonBlockingInput() {
     struct termios ttystate;
@@ -34,3 +36,27 @@ void construct_message(Message* msg, char* input, int id_sender, Client client) 
     msg->id_sender = id_sender;
     msg->client = client;
 }
+
+void* check_connection(void* arg) {
+    int err;
+    socklen_t len = sizeof(err);
+    
+    for (int i = 0; i < MAX_CLIENTS; ++i) {
+        int ret = getsockopt(clients[i].connfd, SOL_SOCKET, SO_ERROR, &err, &len);
+
+        if (ret == 0 && err == 0) {
+            continue;
+        }
+
+        avail[i] = 0;
+        Message msg;
+        snprintf(msg.input, sizeof(msg.input), "%d left the game", clients[i].id);
+        for (int i = 0; i < MAX_CLIENTS; ++i) {
+            send(clients[i].connfd, (Message*)&msg, sizeof(msg), 0);
+        }
+    }
+
+    return NULL;
+}
+
+
