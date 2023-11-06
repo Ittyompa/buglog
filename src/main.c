@@ -4,7 +4,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
+
 #include <pthread.h>
 #include <unistd.h>
 #include <time.h>
@@ -16,6 +16,7 @@
 #define SA struct sockaddr
 #define MAX_CLIENTS 64
 
+// counting clients connected (kinda)
 int client_c = 0;
 
 int main(int argc, char** argv) {
@@ -27,32 +28,37 @@ int main(int argc, char** argv) {
     srand(time(0));
     const int PORT = atoi(argv[3]);
     int sockfd;
-    struct sockaddr_in servaddr;
-    pthread_t thid[MAX_CLIENTS];
-    pthread_t check_connection_th;
+    struct sockaddr_in servaddr; // declaring struct for handling servaddr 
+    pthread_t thid[MAX_CLIENTS]; // declaring threads
+    pthread_t check_connection_th; // declaring threads for checking connections
 
 
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    sockfd = socket(AF_INET, SOCK_STREAM, 0); // declaring socket
     if (sockfd == -1) {
         perror("Failed to create socket");
         return 1;
     }
 
-    bzero(&servaddr, sizeof(servaddr));
+    // configuring socket
+    bzero(&servaddr, sizeof(servaddr)); 
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = inet_addr(argv[2]);
     servaddr.sin_port = htons(PORT);
 
+    // parsing arguments in command line
     if (strcmp(argv[1], "-H") == 0) {
         if (bind(sockfd, (SA*)&servaddr, sizeof(servaddr)) != 0) {
             perror("Failed to bind socket");
             return 1;
         }
+
+        // listening for a connection
         if (listen(sockfd, 5) != 0) {
             perror("Failed to listen");
             return 1;
         }
 
+        // opening thread for checking connection
         pthread_create(&check_connection_th, NULL, &check_connection, NULL);
 
         int client_n = 0;
@@ -75,6 +81,7 @@ int main(int argc, char** argv) {
                 ++client_c;
             }
 
+            // accepting incoming connection
             clients[client_c].connfd = accept(sockfd, (SA*)&servaddr, &len);
 
             if (clients[client_c].connfd < 0) {
@@ -82,9 +89,11 @@ int main(int argc, char** argv) {
                 continue;
             }
             
+            // configuring client settings
             clients[client_c].client_n = client_c;
-            clients[client_c].id = rand() % 32767;
+            clients[client_c].id = rand() % 32767; // setting random id for client
             if (client_c < MAX_CLIENTS) {
+                // creating new thread for client and sending 'clients[client_c]'
                 pthread_create(&thid[client_c], NULL, (void*)start_server, &clients[client_c]);
                 ++client_c;
             } else {
@@ -93,12 +102,13 @@ int main(int argc, char** argv) {
             }
         }
 
-        // waiting thread
+        // waiting for threads to finish executing
         for (int i = 0; i < client_c; ++i) {
             pthread_join(thid[i], NULL);
         }
         ++client_n;
     } else if (strcmp(argv[1], "-C") == 0) {
+        // connecting to server
         if (connect(sockfd, (SA*)&servaddr, sizeof(servaddr)) != 0) {
             perror("Connection failed");
             close(sockfd);
