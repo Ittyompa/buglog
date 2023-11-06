@@ -29,10 +29,8 @@ int main(int argc, char** argv) {
     int sockfd;
     struct sockaddr_in servaddr;
     pthread_t thid[MAX_CLIENTS];
+    pthread_t check_connection_th;
 
-    // for checking if clients disconnects
-    // pthread_t thid_self;
-    // thread_create(&thid_self, NULL, (void*)check_connection, &sockfd);
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd == -1) {
@@ -55,13 +53,14 @@ int main(int argc, char** argv) {
             return 1;
         }
 
+        pthread_create(&check_connection_th, NULL, &check_connection, NULL);
+
         int client_n = 0;
         for (int i = 0; i < MAX_CLIENTS; ++i) {
             avail[i] = 0;
         }
 
         while (1) {
-
             if (client_c == MAX_CLIENTS) {
                 client_c = 0;
             }
