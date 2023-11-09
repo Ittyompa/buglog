@@ -21,8 +21,7 @@ void* from_client(void* arg) {
     int connfd = client.connfd;
     char buffer[BUFF_SZ];
     Message msg;
-
-    FILE* fp = fopen("log.txt", "a+");
+    FILE* fp;
 
     while (1) {
 
@@ -44,7 +43,6 @@ void* from_client(void* arg) {
         }
 
         printf("\33[2k\r(%d): %s\n", msg.id_sender, msg.input);
-        fprintf(fp, "%s", msg.input);
 
         printf("You: %s", buffer_inp_server);
         fflush(stdout);

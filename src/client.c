@@ -24,7 +24,8 @@ void* from_server(void* arg) {
     Message msg;
     while (1) {
         bzero(buffer, sizeof(buffer));
-        recv(sockfd, (Message*)&msg, sizeof(msg), 0);
+        int r = recv(sockfd, (Message*)&msg, sizeof(msg), 0);
+        if (r == 0) return NULL;
 
         printf("\33[2K\r");
         fflush(stdout);

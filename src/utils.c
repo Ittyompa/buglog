@@ -20,6 +20,7 @@ typedef struct {
 
 Client clients[64];
 int avail[64];
+pthread_mutex_t cth_lock;
 
 void setNonBlockingInput() {
     struct termios ttystate;

@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     int sockfd;
     struct sockaddr_in servaddr; // declaring struct for handling servaddr 
     pthread_t thid[MAX_CLIENTS]; // declaring threads
-    pthread_t check_connection_th; // declaring threads for checking connections
+    // pthread_t check_connection_th; // declaring threads for checking connections
 
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0); // declaring socket
@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
         }
 
         // opening thread for checking connection
-        pthread_create(&check_connection_th, NULL, &check_connection, NULL);
+        // pthread_create(&check_connection_th, NULL, &check_connection, NULL);
 
         int client_n = 0;
         for (int i = 0; i < MAX_CLIENTS; ++i) {

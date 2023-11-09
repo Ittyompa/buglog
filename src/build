@@ -1,1 +1,1 @@
-gcc -Wall main.c server.c client.c utils.c -o main
+gcc -Wall -lpthread main.c server.c client.c utils.c -o main
