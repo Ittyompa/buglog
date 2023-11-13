@@ -6,7 +6,7 @@ Buglog can be described as a simple semi-distributed chatting service. It is a t
 
 ## Authors
 
-- [@chouilles](https://www.github.com/choilles)
+- [@chouilles](https://www.github.com/chouilles)
 
 
 ## Features
