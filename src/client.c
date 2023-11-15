@@ -19,17 +19,20 @@ char buffer_inp_client[BUFF_SZ];
 short client_id;
 
 void* from_server(void* arg) {
+    // casting argument to int pointer
     int sockfd = *(int*)arg;
     char buffer[BUFF_SZ];
     Message msg;
     while (1) {
+        // setting buffer to zero
         bzero(buffer, sizeof(buffer));
+        // waiting to recieve message from server
         int r = recv(sockfd, (Message*)&msg, sizeof(msg), 0);
         if (r == 0) return NULL;
 
-        printf("\33[2K\r");
-        fflush(stdout);
-        printf("(%d): %s\n", msg.id_sender, msg.input);
+        printf("\33[2K\r"); // deleting current line in terminal
+        fflush(stdout); // flushing buffer
+        printf("(%d): %s\n", msg.id_sender, msg.input); // printing out message and sender
         printf("You(%d): %s", client_id, buffer_inp_client);
         fflush(stdout);
     }
@@ -40,6 +43,7 @@ void* from_server(void* arg) {
 int start_client(int sockfd) {
     // getting info from server
     Message msg;
+    // waiting to recieve info about the client itself (id)
     int r = recv(sockfd, (Message*)&msg, sizeof(msg), 0);
     if (r == 0) exit(1);
 
@@ -47,7 +51,9 @@ int start_client(int sockfd) {
     client_id = msg.id_reciever;
 
     pthread_t thid;
+    // creating thread to handle incoming messages
     pthread_create(&thid, NULL, &from_server, &sockfd);
+    // hadling print blocking in terminal. So messages would not be interrupted by incoming ones.
     setNonBlockingInput();
     srand(time(0));
 
@@ -58,15 +64,20 @@ int start_client(int sockfd) {
         fflush(stdout);
 
         while (1) {
+            // getting input
             char c = getchar();
+            // checking if input is newline or NULL
             if (c == '\n' || c == 0xffffffff) {
                 break;
+                // chekcing if input is esc og backspace
             } else if (c == 0x8 || c == 0x7F) { 
                 if (m > 0) {
+                    // printing sequence to autobackspace
                     printf("\b \b"); 
                     --m;
                 }
             } else {
+                // pringin out char writting
                 putchar(c); 
                 buffer_inp_client[m++] = c;
             }
@@ -74,7 +85,9 @@ int start_client(int sockfd) {
 
         if (m > 0) {
             Message msg;
+            // constructing message for sending
             construct_message(&msg, buffer_inp_client, client_id, (Client)client);
+            // sending message to server
             send(sockfd, (void*)&msg, sizeof(msg), 0);
             bzero(buffer_inp_client, sizeof(buffer_inp_client));
         }

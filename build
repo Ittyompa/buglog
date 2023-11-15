@@ -1,0 +1,3 @@
+echo "compiling ..."
+gcc -Wall -lpthread -lcurl -ljansson src/main.c src/server.c src/client.c src/utils.c -o main
+echo "done."

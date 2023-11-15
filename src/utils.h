@@ -22,5 +22,6 @@ extern pthread_mutex_t pth_lock;
 void setNonBlockingInput();
 void construct_message(Message* msg, char* input, int id_sender, Client client);
 void* check_connection(void* arg);
+int request_hosts();
 
 #endif

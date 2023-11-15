@@ -1,4 +1,5 @@
 #include <arpa/inet.h> 
+#include <linux/limits.h>
 #include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,6 +10,8 @@
 #include <unistd.h> 
 #include <termios.h>
 #include <pthread.h>
+#include <curl/curl.h>
+
 #include "utils.h"
 
 #define SA struct sockaddr
@@ -49,8 +52,35 @@ void* check_connection(void* arg) {
         }
     }
 
-    printf("Client left");
-
     return NULL;
 }
 
+size_t callback(void* content, size_t sz, size_t memb, void* userp) {
+    size_t rsz = sz * memb;
+    printf("%.*s", (int)rsz, (char*)content);
+    return rsz;
+}
+
+int request_hosts() {
+    CURL *curl;
+    CURLcode res;
+
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+    curl = curl_easy_init();
+
+    if (curl) {
+        curl_easy_setopt(curl, CURLOPT_URL, "192.168.1.71");
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, callback);
+        res = curl_easy_perform(curl);
+
+        if (res != CURLE_OK) {
+            printf("Failed to perform: %s\n", curl_easy_strerror(res));
+        }
+
+        curl_easy_cleanup(curl);
+    }
+
+    curl_global_cleanup();
+
+    return 0;
+}

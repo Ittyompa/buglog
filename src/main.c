@@ -19,10 +19,33 @@
 // counting clients connected (kinda)
 int client_c = 0;
 
+void pr_usage() {
+    printf("Usage: buglog -H/-C IP Port\n");
+}
+
+void pr_help() {
+    printf("Connecting: -C IP PORT");
+    printf("Hosting: -H IP PORT (Need port forward)");
+    printf("Search for chat servers: -s");
+}
+
 int main(int argc, char** argv) {
-    if (argc != 4) {
-        printf("Usage: %s -H/-C IP Port\n", argv[0]);
+    if (argc == 1) {
+        pr_usage();
         return 1;
+    }
+
+    // parsing util (other than connect and host) arguments in command line
+    if (strcmp(argv[1], "-h") == 0) {
+       pr_help(); 
+       return 0; 
+    }
+    else if (strcmp(argv[1], "-s") == 0) {
+        int r = request_hosts();
+        if (r == 1) {
+            printf("Error: requesting hosts\n");
+        }
+        return 0;
     }
 
     srand(time(0));
@@ -31,7 +54,6 @@ int main(int argc, char** argv) {
     struct sockaddr_in servaddr; // declaring struct for handling servaddr 
     pthread_t thid[MAX_CLIENTS]; // declaring threads
     // pthread_t check_connection_th; // declaring threads for checking connections
-
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0); // declaring socket
     if (sockfd == -1) {
@@ -45,7 +67,6 @@ int main(int argc, char** argv) {
     servaddr.sin_addr.s_addr = inet_addr(argv[2]);
     servaddr.sin_port = htons(PORT);
 
-    // parsing arguments in command line
     if (strcmp(argv[1], "-H") == 0) {
         if (bind(sockfd, (SA*)&servaddr, sizeof(servaddr)) != 0) {
             perror("Failed to bind socket");
@@ -107,7 +128,9 @@ int main(int argc, char** argv) {
             pthread_join(thid[i], NULL);
         }
         ++client_n;
-    } else if (strcmp(argv[1], "-C") == 0) {
+
+    }
+    else if (strcmp(argv[1], "-C") == 0) {
         // connecting to server
         if (connect(sockfd, (SA*)&servaddr, sizeof(servaddr)) != 0) {
             perror("Connection failed");
@@ -116,6 +139,10 @@ int main(int argc, char** argv) {
         }
 
         start_client(sockfd);
+    }
+    else {
+        pr_usage();
+        return 1;
     }
 
     close(sockfd);

@@ -3,18 +3,19 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <fcgi_stdio.h>
 
-int main(void) {
-	MYSQL *conn;
-	MYSQL_STMT *stmt;
-	my_ulonglong affected_rows;
-	
-	// values for connecting
-	char *server = "localhost";
-	char *user = "root";
-	char *password = "Mathias123"; 
-	char *database = "buglogdb";
-	
+MYSQL *conn;
+MYSQL_STMT *stmt;
+my_ulonglong affected_rows;
+
+// values for connecting
+char *server = "localhost";
+char *user = "root";
+char *password = "Mathias123"; 
+char *database = "buglogdb";
+
+int handle_req() {
 	conn = mysql_init(NULL);
 	
 	// connecting to db
@@ -81,5 +82,13 @@ int main(void) {
 
 	mysql_stmt_close(stmt); 
 	mysql_close(conn);
+	return 0;
+}
+
+int main(void) {
+	while (FCGI_Accept() >= 0) {
+		int r = handle_req();
+	}
+
 	return 0;
 }
