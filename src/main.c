@@ -24,9 +24,10 @@ void pr_usage() {
 }
 
 void pr_help() {
-    printf("Connecting: -C IP PORT");
-    printf("Hosting: -H IP PORT (Need port forward)");
-    printf("Search for chat servers: -s");
+    printf("Connecting             -C IP PORT\n");
+    printf("Hosting:               -H IP PORT (Need port forward)\n");
+    printf("Search:                -s\n");
+    printf("Or visit https://github.com/chouilles/buglog for more details\n");
 }
 
 int main(int argc, char** argv) {
@@ -49,7 +50,7 @@ int main(int argc, char** argv) {
     }
 
     srand(time(0));
-    const int PORT = atoi(argv[3]);
+    const int PORT = atoi(argv[3]); // parsing to int
     int sockfd;
     struct sockaddr_in servaddr; // declaring struct for handling servaddr 
     pthread_t thid[MAX_CLIENTS]; // declaring threads
@@ -68,6 +69,7 @@ int main(int argc, char** argv) {
     servaddr.sin_port = htons(PORT);
 
     if (strcmp(argv[1], "-H") == 0) {
+        // binding socket
         if (bind(sockfd, (SA*)&servaddr, sizeof(servaddr)) != 0) {
             perror("Failed to bind socket");
             return 1;

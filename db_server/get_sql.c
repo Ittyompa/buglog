@@ -3,7 +3,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
-#include <fcgi_stdio.h>
 
 MYSQL *conn;
 MYSQL_STMT *stmt;
@@ -86,9 +85,7 @@ int handle_req() {
 }
 
 int main(void) {
-	while (FCGI_Accept() >= 0) {
-		int r = handle_req();
-	}
+	int r = handle_req();
 
 	return 0;
 }
