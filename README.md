@@ -3,7 +3,7 @@
 
 # Buglog
 
-Buglog can be described as a simple semi-distributed chatting service. It is a transparent network which allows people to talk over the internet.
+Buglog can be described as a simple semi-distributed chatting service. It is a transparent network which allows Linux users to talk over the internet only using the terminal.
 
 
 ## Authors
