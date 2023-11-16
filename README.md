@@ -70,7 +70,7 @@ buglog -h
  In order to host a chatroom to people outside your **local network**, you will need to portforward on your router. Portforwarding can be done through your routers admin page usually located on `192.168.1.1` WAN settings. [How to port forward](https://www.hellotech.com/guide/for/how-to-port-forward)
 
  You also would need to configure your *firewall* in order to let traffic through.
-When everything is set up, you can start the chatserver using ```buglog -H <Public IP or domain> <PORT>```
+When everything is set up, you can start the chatserver using ```buglog -H <IP> <PORT>```
 ## Appendix
 
 Not finished. **Not safe to use :)**
