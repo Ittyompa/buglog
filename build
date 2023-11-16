@@ -1,3 +1,4 @@
 echo "compiling ..."
 gcc -Wall -lpthread -lcurl -ljansson src/main.c src/server.c src/client.c src/utils.c -o main
+sudo cp main /usr/bin/buglog
 echo "done."
