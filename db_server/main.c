@@ -1,3 +1,4 @@
+// ignore file test-file
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,7 +9,7 @@
 #define PORT 8080
 
 void handle_request(int sockfd) {
-	char response[] = "HTTP/1.1 200 OK\r\nContent-Length: 15\r\nContent-Type: text/plain\r\n\r\nHello, world!\r\n";
+	char response[] = "HTTP/1.1 200 OK\r\nContent-Length: 15\r\nContent-Type: text/plain\r\n\r\nHello, world!\r\n"; // test
 	send(sockfd, response, strlen(response), 0);
 }
 
