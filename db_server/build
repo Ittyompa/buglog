@@ -1,2 +1,0 @@
-gcc $(mysql_config --cflags) -g main.c $(mysql_config --libs) -o main -lfcgi
-

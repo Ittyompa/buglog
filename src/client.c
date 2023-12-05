@@ -29,11 +29,12 @@ void* from_server(void* arg) {
         // waiting to recieve message from server
         int r = recv(sockfd, (Message*)&msg, sizeof(msg), 0);
         if (r == 0) return NULL;
+        if (msg.type > 2) continue;
 
         printf("\33[2K\r"); // deleting current line in terminal
         fflush(stdout); // flushing buffer
-        printf("(%d): %s\n", msg.id_sender, msg.input); // printing out message and sender
-        printf("You(%d): %s", client_id, buffer_inp_client);
+        printf("[%d]> %s\n", msg.id_sender, msg.input); // printing out message and sender
+        printf("[%d]> %s", client_id, buffer_inp_client);
         fflush(stdout);
     }
 
@@ -50,17 +51,17 @@ int start_client(int sockfd) {
     Client client = msg.client;
     client_id = msg.id_reciever;
 
-    pthread_t thid;
     // creating thread to handle incoming messages
+    pthread_t thid;
     pthread_create(&thid, NULL, &from_server, &sockfd);
-    // hadling print blocking in terminal. So messages would not be interrupted by incoming ones.
+    
     setNonBlockingInput();
     srand(time(0));
 
     int m;
     for (;;) {
         m = 0;
-        printf("\nYou(%d): ", client_id);
+        printf("\n[%d]> ", client_id);
         fflush(stdout);
 
         while (1) {
@@ -86,7 +87,7 @@ int start_client(int sockfd) {
         if (m > 0) {
             Message msg;
             // constructing message for sending
-            construct_message(&msg, buffer_inp_client, client_id, (Client)client);
+            construct_message(&msg, buffer_inp_client, client_id, 0, (Client)client);
             // sending message to server
             send(sockfd, (void*)&msg, sizeof(msg), 0);
             bzero(buffer_inp_client, sizeof(buffer_inp_client));

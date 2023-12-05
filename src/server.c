@@ -7,6 +7,8 @@
 #include <netinet/in.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <signal.h>
+
 #include "utils.h"
 
 #define SA struct sockaddr
@@ -30,7 +32,10 @@ void* from_client(void* arg) {
         bzero(buffer, sizeof(buffer));
         // waitin to recieve mesasge from the client
         int r = recv(connfd, (Message*)&msg, sizeof(msg), 0);
-        if (r <= 0) {
+        if (r == 0) {
+            printf("%d left the chat.\n", client.id);
+            fflush(stdout);
+            avail[client.client_n] = 0;
             close(connfd);
             return NULL;
         }
@@ -46,10 +51,10 @@ void* from_client(void* arg) {
             }
         }
 
-        // clearing  screen and printing
+        // clearing screen and printing
         printf("\33[2k\r(%d): %s\n", msg.id_sender, msg.input);
 
-        printf("You: %s", buffer_inp_server);
+        printf("[0]> %s", buffer_inp_server);
         fflush(stdout);
     }
 
@@ -64,21 +69,24 @@ void* start_server(void* arg) {
     // sending clinet info to client
     Message msg;
     msg.id_reciever = client.id;
+    msg.type = 1;
     msg.client = client;
     send(connfd, (Message*)&msg, sizeof(msg), 0);
 
     //  creating thread to await messages from client
     pthread_t thid;
     pthread_create(&thid, NULL, from_client, arg);
+
     // making sure the input field in the terminal is not blocket
     setNonBlockingInput();
 
     char* join_msg; 
     // printing join messsage
-    asprintf(&join_msg, "\e[1mInfo: %d joined the chat\e[m", client.id);
+    asprintf(&join_msg, "\e[1m%d joined the chat\e[m", client.id);
     printf("%s", join_msg);
     strcpy(msg.input, join_msg);
     free(join_msg);
+    msg.type = 1;
     // sending join message to all clients
     for (int i = 0; i < MAX_CLIENTS; ++i) {
         send(clients[i].connfd, (Message*)&msg, sizeof(msg), 0);
@@ -87,11 +95,12 @@ void* start_server(void* arg) {
     int n;
     for (;;) {
         n = 0;
-        printf("\nYou: ");
+        printf("\n[0]> ");
         fflush(stdout);
 
-        // getting inout
+        // getting input
         while (1) {
+
             char c = getchar();
             // looking for enter or backspace keys
             if (c == '\n' || c == 0xffffffff) {
@@ -110,7 +119,7 @@ void* start_server(void* arg) {
         if (n > 0) {
             // construcing and sending message
             Message msg;
-            construct_message(&msg, buffer_inp_server, 0, (Client)client); 
+            construct_message(&msg, buffer_inp_server, 0, 0, (Client)client); 
             // sending message as type void
             int r = send(connfd, (void*)&msg, sizeof(msg), 0);
             if (r == 0) {

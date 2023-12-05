@@ -12,6 +12,7 @@ typedef struct {
 	char input[320];
 	int id_sender;
 	int id_reciever;
+	int type;
 	Client client;
 } Message;
 
@@ -20,8 +21,6 @@ extern int avail[64];
 extern pthread_mutex_t pth_lock;
 
 void setNonBlockingInput();
-void construct_message(Message* msg, char* input, int id_sender, Client client);
-void* check_connection(void* arg);
-int request_hosts();
+void construct_message(Message* msg, char* input, int id_sender, int type, Client client);
 
 #endif
