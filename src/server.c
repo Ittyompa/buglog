@@ -35,8 +35,13 @@ void* from_client(void* arg) {
         if (r == 0) {
             printf("%d left the chat.\n", client.id);
             fflush(stdout);
+
+            pthread_mutex_lock(&cth_lock);
             avail[client.client_n] = 0;
             close(connfd);
+            close(clients[client.client_n].connfd);
+            pthread_mutex_unlock(&cth_lock);
+
             return NULL;
         }
 
@@ -52,9 +57,9 @@ void* from_client(void* arg) {
         }
 
         // clearing screen and printing
-        printf("\33[2k\r(%d): %s\n", msg.id_sender, msg.input);
+        printf("\33[2k\r[%d] > %s\n", msg.id_sender, msg.input);
 
-        printf("[0]> %s", buffer_inp_server);
+        printf("[0] > %s", buffer_inp_server);
         fflush(stdout);
     }
 
@@ -82,7 +87,7 @@ void* start_server(void* arg) {
 
     char* join_msg; 
     // printing join messsage
-    asprintf(&join_msg, "\e[1m%d joined the chat\e[m", client.id);
+    asprintf(&join_msg, "\e[1m%d joined the chat.\e[m", client.id);
     printf("%s", join_msg);
     strcpy(msg.input, join_msg);
     free(join_msg);
@@ -95,7 +100,7 @@ void* start_server(void* arg) {
     int n;
     for (;;) {
         n = 0;
-        printf("\n[0]> ");
+        printf("\n[0] > ");
         fflush(stdout);
 
         // getting input

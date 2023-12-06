@@ -21,14 +21,13 @@ int client_c = 0;
 int client_n = 0;
 
 void pr_usage() {
-    printf("Usage: buglog -H/-C IP Port\n");
+    printf("Usage: -H/-C IP Port\n");
 }
 
 void pr_help() {
     printf("Connecting             -C IP PORT\n");
-    printf("Hosting:               -H IP PORT (Need port forward)\n");
-    printf("Search:                -s\n");
-    printf("Or visit https://github.com/chouilles/buglog for more details\n");
+    printf("Hosting:               -H IP PORT\n");
+    printf("Visit https://github.com/chouilles/buglog for more details.\n");
 }
 
 int main(int argc, char** argv) {
@@ -47,10 +46,12 @@ int main(int argc, char** argv) {
     }
 
     srand(time(0));
-    const int PORT = atoi(argv[3]); // parsing to int
+    const int PORT = atoi(argv[3]); 
     int sockfd;
     struct sockaddr_in servaddr; // declaring struct for handling servaddr 
     pthread_t thid[MAX_CLIENTS]; // declaring threads
+    /* initing mutex var to perseverve syncing with threads*/
+    pthread_mutex_init(&cth_lock, NULL);
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0); // declaring socket
     if (sockfd == -1) {
@@ -90,6 +91,7 @@ int main(int argc, char** argv) {
 
             socklen_t len;
             
+            /* choosing an available position in the array of clients */
             for (int i = 0; i < MAX_CLIENTS; ++i) {
                 if (avail[i] != 1) {
                     avail[i] = 1;
@@ -100,6 +102,7 @@ int main(int argc, char** argv) {
             }
 
             // accepting incoming connection
+            pthread_mutex_lock(&cth_lock);
             clients[client_n].connfd = accept(sockfd, (SA*)&servaddr, &len);
 
             if (clients[client_n].connfd < 0) {
@@ -107,11 +110,14 @@ int main(int argc, char** argv) {
                 continue;
             }
             
-            // configuring client settings
+            /* Configuring client settings with an available id 
+             * as well as the client idx, and then creating
+             * the thread for handling the client*/
             clients[client_n].client_n = client_n;
-            clients[client_n].id = rand() % 32767; // setting random id for client
+            clients[client_n].id = clients[client_n].client_n + 1;
+            pthread_mutex_unlock(&cth_lock);
+
             if (client_c < MAX_CLIENTS) {
-                // creating new thread for client and sending 'clients[client_c]'
                 pthread_create(&thid[client_n], NULL, (void*)start_server, &clients[client_n]);
                 ++client_c;
             } else {

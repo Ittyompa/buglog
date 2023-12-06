@@ -5,7 +5,6 @@ typedef struct {
 	int connfd;
 	int client_n;
 	int id;
-	int avail;
 } Client;
 
 typedef struct {
@@ -18,7 +17,7 @@ typedef struct {
 
 extern Client clients[64];
 extern int avail[64];
-extern pthread_mutex_t pth_lock;
+extern pthread_mutex_t cth_lock;
 
 void setNonBlockingInput();
 void construct_message(Message* msg, char* input, int id_sender, int type, Client client);

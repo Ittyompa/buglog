@@ -33,8 +33,8 @@ void* from_server(void* arg) {
 
         printf("\33[2K\r"); // deleting current line in terminal
         fflush(stdout); // flushing buffer
-        printf("[%d]> %s\n", msg.id_sender, msg.input); // printing out message and sender
-        printf("[%d]> %s", client_id, buffer_inp_client);
+        printf("[%d] > %s\n", msg.id_sender, msg.input); // printing out message and sender
+        printf("[%d] > %s", client_id, buffer_inp_client);
         fflush(stdout);
     }
 
@@ -61,7 +61,7 @@ int start_client(int sockfd) {
     int m;
     for (;;) {
         m = 0;
-        printf("\n[%d]> ", client_id);
+        printf("\n[%d] > ", client_id);
         fflush(stdout);
 
         while (1) {
