@@ -29,13 +29,42 @@ void* from_server(void* arg) {
         // waiting to recieve message from server
         int r = recv(sockfd, (Message*)&msg, sizeof(msg), 0);
         if (r == 0) return NULL;
-        if (msg.type > 2) continue;
+        switch (msg.type) {
+            // handle normal messages
+            case 0:
+                printf("\33[2K\r"); // deleting current line in terminal
+                fflush(stdout); // flushing buffer
+                printf("[%d] > %s\n", msg.id_sender, msg.input); // printing out message and sender
+                printf("[%d] > %s", client_id, buffer_inp_client);
+                fflush(stdout);
+                break;
+            case 1:
+                // handling manuel messages from host
+                printf("\33[2K\r"); // deleting current line in terminal
+                fflush(stdout); // flushing buffer
+                printf("[Host] > %s\n", msg.input); // printing out message and sender
+                printf("[%d] > %s", client_id, buffer_inp_client);
+                fflush(stdout);
+                break;
+                // handling join/leave alerts (removed)
+            case 2:
+                printf("\33[2K\r"); // deleting current line in terminal
+                fflush(stdout); // flushing buffer
+                printf("%s\n", msg.input); // printing out message and sender
+                printf("[%d] > %s", client_id, buffer_inp_client);
+                fflush(stdout);
+                break;
+                // handling Direct Messages
+            case 3:
+                break;
+                // handling server updates
+            case 4:
+                break;
+                // handling command 
+            case 5:
+                break;
+        }
 
-        printf("\33[2K\r"); // deleting current line in terminal
-        fflush(stdout); // flushing buffer
-        printf("[%d] > %s\n", msg.id_sender, msg.input); // printing out message and sender
-        printf("[%d] > %s", client_id, buffer_inp_client);
-        fflush(stdout);
     }
 
     return NULL;

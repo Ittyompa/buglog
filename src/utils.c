@@ -39,6 +39,16 @@ void setNonBlockingInput() {
     tcsetattr(STDIN_FILENO, TCSANOW, &ttystate);
 }
 
+/* 
+ * It constructs a message with the input.
+ * Type:
+ *      0 -> Normal chatting message
+ *      1 -> Manuel message from the host
+ *      2 -> Join/leave alert
+ *      3 -> Direct Message
+ *      4 -> Server updates (like restart and going offline)
+ *      5 -> Commands/requests
+ */
 void construct_message(Message* msg, char* input, int id_sender, int type, Client client) {
     strcpy(msg->input, input);
     msg->id_sender = id_sender;
