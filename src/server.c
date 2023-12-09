@@ -18,7 +18,7 @@
 char buffer_inp_server[BUFF_SZ];
 struct sockaddr_in cli;
 
-void handle_leave_alert(Client client) {
+void handle_leave_alert(endpoint_t client) {
     pthread_mutex_lock(&cth_lock);
 
     Message msg;
@@ -33,7 +33,7 @@ void handle_leave_alert(Client client) {
     pthread_mutex_unlock(&cth_lock);
 }
 
-void handle_join_alert(Client client) {
+void handle_join_alert(endpoint_t client) {
     Message msg;
     construct_message(&msg, "[+]", 0, 2, client);
 
@@ -45,7 +45,7 @@ void handle_join_alert(Client client) {
 
 void* from_client(void* arg) {
     // casting arg to client type
-    Client client = *(Client*)arg;
+    endpoint_t client = *(endpoint_t*)arg;
     int connfd = client.connfd;
     char buffer[BUFF_SZ];
     Message msg;
@@ -90,7 +90,7 @@ void* from_client(void* arg) {
 }
 
 void* start_server(void* arg) {
-    Client client = *(Client*)arg;
+    endpoint_t client = *(endpoint_t *)arg;
     int connfd = client.connfd;
 
     // sending client info to client
@@ -138,7 +138,7 @@ void* start_server(void* arg) {
         if (n > 0) {
             // constructing and sending message
             Message msg;
-            construct_message(&msg, buffer_inp_server, 0, 1, (Client)client); 
+            construct_message(&msg, buffer_inp_server, 0, 1, (endpoint_t)client); 
             int r = send(connfd, (void*)&msg, sizeof(msg), 0);
             if (r == 0) {
                 return NULL;

@@ -77,7 +77,7 @@ int start_client(int sockfd) {
     int r = recv(sockfd, (Message*)&msg, sizeof(msg), 0);
     if (r == 0) exit(1);
 
-    Client client = msg.client;
+    endpoint_t client = msg.client;
     client_id = msg.id_reciever;
 
     // creating thread to handle incoming messages
@@ -116,7 +116,7 @@ int start_client(int sockfd) {
         if (m > 0) {
             Message msg;
             // constructing message for sending
-            construct_message(&msg, buffer_inp_client, client_id, 0, (Client)client);
+            construct_message(&msg, buffer_inp_client, client_id, 0, (endpoint_t )client);
             // sending message to server
             send(sockfd, (void*)&msg, sizeof(msg), 0);
             bzero(buffer_inp_client, sizeof(buffer_inp_client));

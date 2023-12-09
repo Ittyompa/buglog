@@ -24,7 +24,7 @@ typedef struct {
     int connfd;
 } ThreadArgs;
 
-Client clients[64]; // array of clients
+endpoint_t clients[64]; // array of clients
 int avail[64]; // array of available clients
 pthread_mutex_t cth_lock; // variable for locking mutex when accessing global data
 
@@ -49,7 +49,7 @@ void setNonBlockingInput() {
  *      4 -> Server updates (like restart and going offline)
  *      5 -> Commands/requests
  */
-void construct_message(Message* msg, char* input, int id_sender, int type, Client client) {
+void construct_message(Message* msg, char* input, int id_sender, int type, endpoint_t client) {
     strcpy(msg->input, input);
     msg->id_sender = id_sender;
     msg->type = type;
