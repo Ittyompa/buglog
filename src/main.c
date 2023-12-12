@@ -33,7 +33,7 @@ void pr_usage() {
 void pr_help() {
     printf("Connecting             -C IP PORT\n");
     printf("Hosting:               -H IP PORT\n");
-    printf("Visit https://github.com/chouilles/buglog for more details.\n");
+    printf("Visit https://github.com/chekuga/buglog for more details.\n");
 }
 
 Settings* parse_args(int argc, char** argv) {
