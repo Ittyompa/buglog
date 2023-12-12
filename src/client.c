@@ -59,12 +59,12 @@ void* from_server(void* arg) {
                 break;
             case 3:
                 // handling Direct Messages
+                printf("worked\n");
                 break;
             case 4:
                 // handling server updates
                 break;
             case 5:
-                // handling command 
                 break;
         }
     }
@@ -122,20 +122,21 @@ int start_client(int sockfd) {
                     --m;
                 }
             } else {
-                // pringin out char writting
+                // printing out char
                 putchar(c); 
                 buffer_inp_client[m++] = c;
             }
         }
-
-        if (m > 0) {
-            packet_t msg;
+        
+        if (buffer_inp_client[0] == '/') {
+        }
+        else if (m > 0) {
             // constructing message for sending
             construct_message(&msg, buffer_inp_client, client_id, 0, (endpoint_t )client);
             // sending message to server
             send(sockfd, (void*)&msg, sizeof(msg), 0);
-            bzero(buffer_inp_client, sizeof(buffer_inp_client));
         }
+        bzero(buffer_inp_client, sizeof(buffer_inp_client));
     }
 
     return 0;

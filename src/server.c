@@ -69,24 +69,40 @@ void* from_client(void* arg) {
             return NULL;
         }
 
-        // sending the same message to all other clients
-        for (int i = 0; i < MAX_CLIENTS; ++i) {
-            if (i == client.client_n || avail[i] == 0) {
-                continue;
-            }
-            if (send(clients[i].connfd, (packet_t*)&msg, sizeof(msg), 0) == 0) {
-                perror("error sending");
-            }
-        }
-
         char* current_time = get_current_time();
-        // clearing screen and printing
-        printf("\33[2k\r");
-        printf("[%s] <%s> %s\n", current_time, client.nickname, msg.input);
-        printf("<host> %s", buffer_inp_server);
-        fflush(stdout);
+        switch (msg.type) {
+            // handle normal messages
+            case 0:
+                for (int i = 0; i < MAX_CLIENTS; ++i) {
+                    if (i == client.client_n || avail[i] == 0) {
+                        continue;
+                    }
+                    int r = send(clients[i].connfd, (packet_t*)&msg, sizeof(msg), 0);
+                    if (r == 0) {
+                        printf("Error sending\n");
+                    }
+                }
 
-        free(current_time);
+                // clearing screen and printing
+                printf("\33[2k\r");
+                printf("[%s] <%s> %s\n", current_time, client.nickname, msg.input);
+                printf("<host> %s", buffer_inp_server);
+                fflush(stdout);
+                break;
+            case 1:
+                // handling manuel messages from host
+                break;
+            case 2:
+                break;
+            case 3:
+                // handling Direct Messages
+                break;
+            case 4:
+                // handling server updates
+                break;
+            case 5:
+                break;
+        }
     }
 
     fclose(fp);
@@ -132,6 +148,7 @@ void* start_server(void* arg) {
 
         // getting input
         while (1) {
+
             char c = getchar();
             if (c == '\n' || c == 0xffffffff) {
                 break;
@@ -146,7 +163,13 @@ void* start_server(void* arg) {
             }
         }
 
-        if (n > 0) {
+        if (strcmp(buffer_inp_server, "/stop") == 0) {
+            for (int i = 0; i < MAX_CLIENTS; ++i) {
+                close(clients[i].connfd);
+            }
+            return NULL;
+        }
+        else if (n > 0) {
             // constructing and sending message
             packet_t msg;
             construct_message(&msg, buffer_inp_server, 0, 1, (endpoint_t)client); 

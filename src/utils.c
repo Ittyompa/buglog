@@ -56,6 +56,7 @@ void construct_message(packet_t* msg, char* input, int id_sender, int type, endp
     msg->client = client;
 }
 
+
 char* get_current_time() {
     time_t time_seconds = time(NULL);
     char* current_time = (char*)malloc(16);
@@ -63,3 +64,44 @@ char* get_current_time() {
     current_time[strlen(current_time)-1] = '\0';
     return current_time;
 }
+
+char** split_string(const char* str, char splitter, int* count) {
+    int token_n = 0;
+    const char* temp = str;
+    
+    while (*temp != '\0') {
+        if (*temp == splitter) {
+            token_n++;
+        }
+        temp++;
+    }
+    token_n++;  
+    
+    char** tokens = (char**)malloc(token_n * sizeof(char*));
+    if (!tokens) {
+        *count = 0;
+        return NULL;
+    }
+    
+    int token_idx = 0;
+    char* token = strtok((char*)str, &splitter);
+    while (token != NULL) {
+        tokens[token_idx] = (char*)malloc(320 * sizeof(char));
+        if (!tokens[token_idx]) {
+            for (int i = 0; i < token_idx; ++i) {
+                free(tokens[i]);
+            }
+            free(tokens);
+            *count = 0;
+            return NULL;
+        }
+        strcpy(tokens[token_idx], token);
+        token_idx++;
+        token = strtok(NULL, &splitter);
+    }
+    
+    *count = token_n;
+    return tokens;
+}
+
+
