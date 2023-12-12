@@ -49,10 +49,17 @@ void setNonBlockingInput() {
  *      4 -> Server updates (like restart and going offline)
  *      5 -> Commands/requests
  */
-void construct_message(Message* msg, char* input, int id_sender, int type, endpoint_t client) {
+void construct_message(packet_t* msg, char* input, int id_sender, int type, endpoint_t client) {
     strcpy(msg->input, input);
     msg->id_sender = id_sender;
     msg->type = type;
     msg->client = client;
 }
 
+char* get_current_time() {
+    time_t time_seconds = time(NULL);
+    char* current_time = (char*)malloc(16);
+    current_time = ctime(&time_seconds);
+    current_time[strlen(current_time)-1] = '\0';
+    return current_time;
+}

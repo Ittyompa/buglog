@@ -1,6 +1,8 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <time.h>
+
 typedef struct {
 	int connfd;
 	int client_n;
@@ -14,13 +16,14 @@ typedef struct {
 	int id_reciever;
 	int type;
 	endpoint_t client;
-} Message;
+} packet_t;
 
 extern endpoint_t clients[64];
 extern int avail[64];
 extern pthread_mutex_t cth_lock;
 
 void setNonBlockingInput();
-void construct_message(Message* msg, char* input, int id_sender, int type, endpoint_t client);
+void construct_message(packet_t* msg, char* input, int id_sender, int type, endpoint_t client);
+char* get_current_time();
 
 #endif

@@ -24,7 +24,7 @@ typedef struct {
     char ip[16];
     int port;
     int host;
-} Connection;
+} Settings;
 
 void pr_usage() {
     printf("Usage: -H/-C IP Port\n");
@@ -36,8 +36,8 @@ void pr_help() {
     printf("Visit https://github.com/chouilles/buglog for more details.\n");
 }
 
-Connection* parse_args(int argc, char** argv) {
-    Connection* fl = (Connection*)malloc(sizeof(Connection));
+Settings* parse_args(int argc, char** argv) {
+    Settings* fl = (Settings*)malloc(sizeof(Settings));
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "-H") == 0) {
             fl->host = 1;
@@ -48,7 +48,7 @@ Connection* parse_args(int argc, char** argv) {
         else if (strcmp(argv[i], "-p") == 0 && i <= argc && argv[i + 1][0] != '-') {
             fl->port = atoi(argv[i + 1]);
         }
-        else if (strcmp(argv[i], "-ip") == 0 && i <= argc && argv[i + i][0] != '-') {
+        else if (strcmp(argv[i], "-ip") == 0 && i <= argc && argv[i + 1][0] != '-') {
             strcpy(fl->ip, argv[i + 1]);
         }
         else if (strcmp(argv[i], "-h") == 0) {
@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    Connection* fl = (Connection*)parse_args(argc, argv);
+    Settings* fl = (Settings*)parse_args(argc, argv);
 
     srand(time(0));
     const int PORT = fl->port; 

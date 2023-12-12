@@ -17,80 +17,95 @@
 
 char buffer_inp_client[BUFF_SZ];
 short client_id;
+char nickname[32];
 
 void* from_server(void* arg) {
     // casting argument to int pointer
     int sockfd = *(int*)arg;
     char buffer[BUFF_SZ];
-    Message msg;
+    packet_t msg;
     while (1) {
         // setting buffer to zero
         bzero(buffer, sizeof(buffer));
+
         // waiting to recieve message from server
-        int r = recv(sockfd, (Message*)&msg, sizeof(msg), 0);
-        if (r == 0) return NULL;
+        if (recv(sockfd, (packet_t*)&msg, sizeof(msg), 0) == 0) return NULL;
+
         switch (msg.type) {
             // handle normal messages
             case 0:
+                char* current_time = get_current_time();
                 printf("\33[2K\r"); // deleting current line in terminal
                 fflush(stdout); // flushing buffer
-                printf("[%d] > %s\n", msg.id_sender, msg.input); // printing out message and sender
-                printf("[%d] > %s", client_id, buffer_inp_client);
+                printf("[%s] <%s> %s\n", current_time, msg.client.nickname, msg.input); // printing out message and sender
+                printf("<%s> %s", nickname, buffer_inp_client);
                 fflush(stdout);
                 break;
             case 1:
                 // handling manuel messages from host
                 printf("\33[2K\r"); // deleting current line in terminal
                 fflush(stdout); // flushing buffer
-                printf("[Host] > %s\n", msg.input); // printing out message and sender
-                printf("[%d] > %s", client_id, buffer_inp_client);
+                printf("<host> %s\n", msg.input); // printing out message and sender
+                printf("<%s> %s", nickname, buffer_inp_client);
                 fflush(stdout);
                 break;
-                // handling join/leave alerts (removed)
             case 2:
+                // handling join/leave alerts (removed)
                 printf("\33[2K\r"); // deleting current line in terminal
                 fflush(stdout); // flushing buffer
                 printf("%s\n", msg.input); // printing out message and sender
-                printf("[%d] > %s", client_id, buffer_inp_client);
+                printf("<%s> %s", nickname, buffer_inp_client);
                 fflush(stdout);
                 break;
-                // handling Direct Messages
             case 3:
+                // handling Direct Messages
                 break;
-                // handling server updates
             case 4:
+                // handling server updates
                 break;
-                // handling command 
             case 5:
+                // handling command 
                 break;
         }
-
     }
 
     return NULL;
 }
 
 int start_client(int sockfd) {
-    // getting info from server
-    Message msg;
+    packet_t msg;
+    pthread_t thid;
+    int m;
     // waiting to recieve info about the client itself (id)
-    int r = recv(sockfd, (Message*)&msg, sizeof(msg), 0);
-    if (r == 0) exit(1);
+    if(recv(sockfd, (packet_t*)&msg, sizeof(msg), 0) == 0) {
+        return 1;
+    }
+
+    printf("nickname: ");
+    fflush(stdout);
+    fgets(nickname, sizeof(nickname), stdin);
+    for (int i = 0; i < sizeof(nickname); ++i) {
+        if (nickname[i] == '\n') {
+            nickname[i] = '\0';
+        }
+    }
+
+    strcpy(msg.client.nickname, nickname);
+    if (send(sockfd, (packet_t*)&msg, sizeof(msg), 0) == 0) {
+        return 0;
+    }
 
     endpoint_t client = msg.client;
     client_id = msg.id_reciever;
 
     // creating thread to handle incoming messages
-    pthread_t thid;
     pthread_create(&thid, NULL, &from_server, &sockfd);
-    
     setNonBlockingInput();
     srand(time(0));
 
-    int m;
     for (;;) {
         m = 0;
-        printf("\n[%d] > ", client_id);
+        printf("\n<%s> ", client.nickname);
         fflush(stdout);
 
         while (1) {
@@ -114,7 +129,7 @@ int start_client(int sockfd) {
         }
 
         if (m > 0) {
-            Message msg;
+            packet_t msg;
             // constructing message for sending
             construct_message(&msg, buffer_inp_client, client_id, 0, (endpoint_t )client);
             // sending message to server

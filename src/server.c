@@ -8,6 +8,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <signal.h>
+#include <time.h>
 
 #include "utils.h"
 
@@ -21,11 +22,11 @@ struct sockaddr_in cli;
 void handle_leave_alert(endpoint_t client) {
     pthread_mutex_lock(&cth_lock);
 
-    Message msg;
+    packet_t msg;
     construct_message(&msg, "[-]", 0, 2, client);
 
     for (int i = 0; i < MAX_CLIENTS; ++i) {
-        send(clients[i].connfd, (Message*)&msg, sizeof(msg), 0);
+        send(clients[i].connfd, (packet_t*)&msg, sizeof(msg), 0);
     }
 
     avail[client.client_n] = 0;
@@ -34,12 +35,12 @@ void handle_leave_alert(endpoint_t client) {
 }
 
 void handle_join_alert(endpoint_t client) {
-    Message msg;
+    packet_t msg;
     construct_message(&msg, "[+]", 0, 2, client);
 
     printf("[+]");
     for (int i = 0; i < MAX_CLIENTS; ++i) {
-        send(clients[i].connfd, (Message*)&msg, sizeof(msg), 0);
+        send(clients[i].connfd, (packet_t*)&msg, sizeof(msg), 0);
     }
 }
 
@@ -48,7 +49,7 @@ void* from_client(void* arg) {
     endpoint_t client = *(endpoint_t*)arg;
     int connfd = client.connfd;
     char buffer[BUFF_SZ];
-    Message msg;
+    packet_t msg;
     FILE* fp;
 
     while (1) {
@@ -56,7 +57,7 @@ void* from_client(void* arg) {
         // ensuring the buffer in empty
         bzero(buffer, sizeof(buffer));
         // waitin to recieve mesasge from the client
-        int r = recv(connfd, (Message*)&msg, sizeof(msg), 0);
+        int r = recv(connfd, (packet_t*)&msg, sizeof(msg), 0);
         /* checking if the client sends nothing back,
          * then it will terminate the connection
          */
@@ -73,16 +74,19 @@ void* from_client(void* arg) {
             if (i == client.client_n || avail[i] == 0) {
                 continue;
             }
-            int r = send(clients[i].connfd, (Message*)&msg, sizeof(msg), 0);
-            if (r == 0) {
-                printf("Error sending\n");
+            if (send(clients[i].connfd, (packet_t*)&msg, sizeof(msg), 0) == 0) {
+                perror("error sending");
             }
         }
 
+        char* current_time = get_current_time();
         // clearing screen and printing
-        printf("\33[2k\r[%d] > %s\n", msg.id_sender, msg.input);
-        printf("> %s", buffer_inp_server);
+        printf("\33[2k\r");
+        printf("[%s] <%s> %s\n", current_time, client.nickname, msg.input);
+        printf("<host> %s", buffer_inp_server);
         fflush(stdout);
+
+        free(current_time);
     }
 
     fclose(fp);
@@ -90,37 +94,44 @@ void* from_client(void* arg) {
 }
 
 void* start_server(void* arg) {
-    endpoint_t client = *(endpoint_t *)arg;
+    endpoint_t client = *(endpoint_t*)arg;
     int connfd = client.connfd;
 
     // sending client info to client
-    Message msg;
+    packet_t msg;
     msg.id_reciever = client.id;
     msg.type = 1;
     msg.client = client;
-    send(connfd, (Message*)&msg, sizeof(msg), 0);
+    if (send(connfd, (packet_t*)&msg, sizeof(msg), 0) == 0) {
+        return NULL;
+    }
+    
+    // reciving clinet back with added nickname
+    if (recv(connfd, (packet_t*)&msg, sizeof(msg), 0) == 0) {
+        return NULL;
+    }
+
+    strcpy(client.nickname, msg.client.nickname);
+    strcpy(clients[client.client_n].nickname, msg.client.nickname);
 
     // creating thread to await messages from client
     pthread_t thid;
-    pthread_create(&thid, NULL, from_client, arg);
+    pthread_create(&thid, NULL, from_client, &client);
 
     /* making sure the input field in the terminal is not blocket
      * by other processes running (from_client())
      */
     setNonBlockingInput();
-
     // handle_join_alert(client);
-    printf("[+]");
 
     int n;
     for (;;) {
         n = 0;
-        printf("\n> ");
+        printf("\n<host> ");
         fflush(stdout);
 
         // getting input
         while (1) {
-
             char c = getchar();
             if (c == '\n' || c == 0xffffffff) {
                 break;
@@ -137,7 +148,7 @@ void* start_server(void* arg) {
 
         if (n > 0) {
             // constructing and sending message
-            Message msg;
+            packet_t msg;
             construct_message(&msg, buffer_inp_server, 0, 1, (endpoint_t)client); 
             int r = send(connfd, (void*)&msg, sizeof(msg), 0);
             if (r == 0) {
