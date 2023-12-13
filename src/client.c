@@ -31,10 +31,10 @@ void* from_server(void* arg) {
         // waiting to recieve message from server
         if (recv(sockfd, (packet_t*)&msg, sizeof(msg), 0) == 0) return NULL;
 
+        char* current_time = get_current_time();
         switch (msg.type) {
             // handle normal messages
             case 0:
-                char* current_time = get_current_time();
                 printf("\33[2K\r"); // deleting current line in terminal
                 fflush(stdout); // flushing buffer
                 printf("[%s] <%s> %s\n", current_time, msg.client.nickname, msg.input); // printing out message and sender
@@ -58,7 +58,11 @@ void* from_server(void* arg) {
                 fflush(stdout);
                 break;
             case 3:
-                // handling Direct Messages
+                printf("\33[2K\r"); // deleting current line in terminal
+                fflush(stdout); // flushing buffer
+                printf("\33[0;32m[%s] <%s>\33[0m <%s>\n", current_time, msg.client.nickname, msg.input); // printing out message and sender
+                printf("<%s> %s", nickname, buffer_inp_client);
+                fflush(stdout);
                 break;
             case 4:
                 // handling server updates
@@ -131,12 +135,23 @@ int start_client(int sockfd) {
             int count;
             char** args = split_string(buffer_inp_client, ' ', &count);
             if (strcmp(args[0], "/dm") == 0) {
-                construct_message(&msg, buffer_inp_client, client_id, 3, (endpoint_t )client);
-                strcpy(msg.nickname_receiver, buffer_inp_client);
+                char dm_input[320];
+                int idx = 0;
+                for (int i = 2; i < count; ++i) {
+                    for (int j = 0; j < strlen(args[i]); ++j) {
+                       dm_input[idx++] = args[i][j];
+                    }
+                    if (i != count) {
+                        dm_input[idx++] = ' ';
+                    }
+                }
+
+                construct_message(&msg, dm_input, client_id, 3, (endpoint_t )client);
+                strcpy(msg.nickname_reciever, args[1]);
                 send(sockfd, (void*)&msg, sizeof(msg), 0);
             }
         }
-        if else (m > 0) {
+        else if (m > 0) {
             // constructing message for sending
             construct_message(&msg, buffer_inp_client, client_id, 0, (endpoint_t )client);
             // sending message to server

@@ -95,7 +95,19 @@ void* from_client(void* arg) {
             case 2:
                 break;
             case 3:
-                // handling Direct Messages
+                for (int i = 0; i < MAX_CLIENTS; ++i) {
+                    if (strcmp(clients[i].nickname, msg.nickname_reciever) == 0) {
+                        if (send(clients[i].connfd, (packet_t*)&msg, sizeof(msg), 0) == 0) {
+                            printf("Error sending\n");
+                        }
+                    }
+                }
+
+                // clearing screen and printing
+                printf("\33[2k\r");
+                printf("[%s] <DM> <%s> %s\n", current_time, client.nickname, msg.input);
+                printf("<host> %s", buffer_inp_server);
+                fflush(stdout);
                 break;
             case 4:
                 // handling server updates
