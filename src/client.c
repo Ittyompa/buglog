@@ -59,7 +59,6 @@ void* from_server(void* arg) {
                 break;
             case 3:
                 // handling Direct Messages
-                printf("worked\n");
                 break;
             case 4:
                 // handling server updates
@@ -129,8 +128,15 @@ int start_client(int sockfd) {
         }
         
         if (buffer_inp_client[0] == '/') {
+            int count;
+            char** args = split_string(buffer_inp_client, ' ', &count);
+            if (strcmp(args[0], "/dm") == 0) {
+                construct_message(&msg, buffer_inp_client, client_id, 3, (endpoint_t )client);
+                strcpy(msg.nickname_receiver, buffer_inp_client);
+                send(sockfd, (void*)&msg, sizeof(msg), 0);
+            }
         }
-        else if (m > 0) {
+        if else (m > 0) {
             // constructing message for sending
             construct_message(&msg, buffer_inp_client, client_id, 0, (endpoint_t )client);
             // sending message to server

@@ -106,6 +106,7 @@ void* from_client(void* arg) {
     }
 
     fclose(fp);
+    close(connfd);
     return NULL;
 }
 

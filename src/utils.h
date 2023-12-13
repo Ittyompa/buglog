@@ -18,6 +18,7 @@ typedef struct {
 	char input[320];
 	int id_sender;
 	int id_reciever;
+	char nickname_reciever[32];
 	int type;
 	endpoint_t client;
 } packet_t;

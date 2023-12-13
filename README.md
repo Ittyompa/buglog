@@ -54,6 +54,11 @@ sudo pacman -S gcc
 buglog -C -ip <IP> -p <PORT>
 ```
 
+**DM**
+``` bash
+/dm <nickname> <message>
+```
+
 **Help**
 ```bash
 buglog -h 

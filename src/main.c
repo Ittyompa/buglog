@@ -27,12 +27,10 @@ typedef struct {
 } Settings;
 
 void pr_usage() {
-    printf("Usage: -H/-C IP Port\n");
+    printf("Usage: [-C Connecting] [-H Host] [-ip <ip>] [-p <port>] [-h Help]\n");
 }
 
 void pr_help() {
-    printf("Connecting             -C IP PORT\n");
-    printf("Hosting:               -H IP PORT\n");
     printf("Visit https://github.com/chekuga/buglog for more details.\n");
 }
 
@@ -109,7 +107,7 @@ int main(int argc, char** argv) {
 
         while (1) {
             if (client_c == MAX_CLIENTS) {
-                perror("max clients reached!");
+                perror("max clients reached");
                 exit(1);
             }
 
@@ -130,8 +128,8 @@ int main(int argc, char** argv) {
             clients[client_n].connfd = accept(sockfd, (SA*)&servaddr, &len);
 
             if (clients[client_n].connfd < 0) {
-                perror("Could not accept.");
-                continue;
+                perror("Could not accept");
+                exit(1);
             }
             
             /* Configuring client settings with an availafle id 
