@@ -13,15 +13,14 @@ Buglog can be described as a simple distributed chatting service. It is a transp
 
 ## Features
 
-- Transparent chatting.
 - User run.
-- Sentralized Database.
+- Direct messaging
 
 ## To be added-features
 
-- Direct Messaging.
 - Customization with .conf file.
 - Tor compatibility
+
 ## Installation
 
 Compile Buglog with gcc 
