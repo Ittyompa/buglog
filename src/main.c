@@ -21,7 +21,7 @@ int client_c = 0;
 int client_n = 0;
 
 typedef struct {
-    char ip[16];
+    int ip;
     int port;
     int host;
 } Settings;
@@ -47,7 +47,7 @@ Settings* parse_args(int argc, char** argv) {
             fl->port = atoi(argv[i + 1]);
         }
         else if (strcmp(argv[i], "-ip") == 0 && i <= argc && argv[i + 1][0] != '-') {
-            strcpy(fl->ip, argv[i + 1]);
+            fl->ip = i + 1;
         }
         else if (strcmp(argv[i], "-h") == 0) {
             pr_help();
@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
     // configuring socket
     bzero(&servaddr, sizeof(servaddr)); 
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = inet_addr(fl->ip);
+    servaddr.sin_addr.s_addr = inet_addr(argv[fl->ip]);
     servaddr.sin_port = htons(PORT);
 
     if (fl->host == 1) {
@@ -124,7 +124,6 @@ int main(int argc, char** argv) {
             }
 
             // accepting incoming connection
-            pthread_mutex_lock(&cth_lock);
             clients[client_n].connfd = accept(sockfd, (SA*)&servaddr, &len);
 
             if (clients[client_n].connfd < 0) {
@@ -137,7 +136,6 @@ int main(int argc, char** argv) {
              * the thread for handling the client*/
             clients[client_n].client_n = client_n;
             clients[client_n].id = clients[client_n].client_n + 1;
-            pthread_mutex_unlock(&cth_lock);
 
             if (client_c < MAX_CLIENTS) {
                 pthread_create(&thid[client_n], NULL, (void*)start_server, &clients[client_n]);
@@ -170,6 +168,9 @@ int main(int argc, char** argv) {
 
     free(fl);
     close(sockfd);
+    for (int i = 0; i < MAX_CLIENTS; ++i) {
+        close(clients[i].connfd);
+    }
     return 0;
 }
 

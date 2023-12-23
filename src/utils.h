@@ -3,10 +3,6 @@
 
 #include <time.h>
 
-enum Commands {
-	DM,
-};
-
 typedef struct {
 	int connfd;
 	int client_n;
@@ -30,6 +26,7 @@ extern pthread_mutex_t cth_lock;
 void setNonBlockingInput();
 void construct_message(packet_t* msg, char* input, int id_sender, int type, endpoint_t client);
 char* get_current_time();
+void free_tokens(char** tokens, int count);
 char** split_string(const char* str, char splitter, int* count);
 
 #endif

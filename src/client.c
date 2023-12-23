@@ -60,7 +60,7 @@ void* from_server(void* arg) {
             case 3:
                 printf("\33[2K\r"); // deleting current line in terminal
                 fflush(stdout); // flushing buffer
-                printf("\33[0;32m[%s] <%s>\33[0m <%s>\n", current_time, msg.client.nickname, msg.input); // printing out message and sender
+                printf("\33[0;32m[%s] <%s>\33[0m %s\n", current_time, msg.client.nickname, msg.input); // printing out message and sender
                 printf("<%s> %s", nickname, buffer_inp_client);
                 fflush(stdout);
                 break;
@@ -141,20 +141,23 @@ int start_client(int sockfd) {
                     for (int j = 0; j < strlen(args[i]); ++j) {
                        dm_input[idx++] = args[i][j];
                     }
-                    if (i != count) {
+                    if (idx != count - 1) {
                         dm_input[idx++] = ' ';
                     }
                 }
 
                 construct_message(&msg, dm_input, client_id, 3, (endpoint_t )client);
                 strcpy(msg.nickname_reciever, args[1]);
-                send(sockfd, (void*)&msg, sizeof(msg), 0);
+                if (send(sockfd, (packet_t*)&msg, sizeof(msg), 0) == 0) {
+                    printf("could not send DM.\n");
+                }
             }
+
+            free_tokens(args, count);
         }
         else if (m > 0) {
-            // constructing message for sending
+            // constructing and sending message
             construct_message(&msg, buffer_inp_client, client_id, 0, (endpoint_t )client);
-            // sending message to server
             send(sockfd, (void*)&msg, sizeof(msg), 0);
         }
         bzero(buffer_inp_client, sizeof(buffer_inp_client));

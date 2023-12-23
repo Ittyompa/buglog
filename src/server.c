@@ -36,7 +36,7 @@ void handle_leave_alert(endpoint_t client) {
 
 void handle_join_alert(endpoint_t client) {
     packet_t msg;
-    construct_message(&msg, "[+]", 0, 2, client);
+    construct_message(&msg, "\n [+]\n", 0, 2, client);
 
     printf("[+]");
     for (int i = 0; i < MAX_CLIENTS; ++i) {
@@ -62,7 +62,6 @@ void* from_client(void* arg) {
          * then it will terminate the connection
          */
         if (r == 0) {
-            printf("\n[-]\n");
             fflush(stdout);
             // handle_leave_alert(client);
             close(connfd);
@@ -135,10 +134,17 @@ void* start_server(void* arg) {
         return NULL;
     }
     
-    // reciving clinet back with added nickname
+    // reciving client back with added nickname
     if (recv(connfd, (packet_t*)&msg, sizeof(msg), 0) == 0) {
         return NULL;
     }
+
+    /* code for checking if nickname is taken coming here
+     *
+     *
+     *
+     *
+     * */
 
     strcpy(client.nickname, msg.client.nickname);
     strcpy(clients[client.client_n].nickname, msg.client.nickname);
@@ -151,7 +157,7 @@ void* start_server(void* arg) {
      * by other processes running (from_client())
      */
     setNonBlockingInput();
-    // handle_join_alert(client);
+    handle_join_alert(client);
 
     int n;
     for (;;) {

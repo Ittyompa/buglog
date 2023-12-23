@@ -65,17 +65,29 @@ char* get_current_time() {
     return current_time;
 }
 
+void free_tokens(char** tokens, int count) {
+    if (tokens == NULL) {
+        return;
+    }
+
+    for (int i = 0; i < count; ++i) {
+        free(tokens[i]);
+    }
+
+    free(tokens);
+}
+
 char** split_string(const char* str, char splitter, int* count) {
     int token_n = 0;
     const char* temp = str;
     
     while (*temp != '\0') {
         if (*temp == splitter) {
-            token_n++;
+            ++token_n;
         }
-        temp++;
+        ++temp;
     }
-    token_n++;  
+    ++token_n;  
     
     char** tokens = (char**)malloc(token_n * sizeof(char*));
     if (!tokens) {
@@ -96,7 +108,7 @@ char** split_string(const char* str, char splitter, int* count) {
             return NULL;
         }
         strcpy(tokens[token_idx], token);
-        token_idx++;
+        ++token_idx;
         token = strtok(NULL, &splitter);
     }
     
