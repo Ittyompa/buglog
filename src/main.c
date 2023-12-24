@@ -31,7 +31,7 @@ void pr_usage() {
 }
 
 void pr_help() {
-    printf("Visit https://github.com/chekuga/buglog for more details.\n");
+    printf("Visit https://github.com/cadabaroo/clara for more details.\n");
 }
 
 Settings* parse_args(int argc, char** argv) {
