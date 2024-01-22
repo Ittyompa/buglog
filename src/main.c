@@ -65,17 +65,17 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    Settings* fl = (Settings*)parse_args(argc, argv);
-
     srand(time(0));
+
+    Settings* fl = (Settings*)parse_args(argc, argv);
     const int PORT = fl->port; 
-    int sockfd;
-    struct sockaddr_in servaddr; // declaring struct for handling servaddr 
-    pthread_t thid[MAX_CLIENTS]; // declaring threads
+    struct sockaddr_in servaddr;
+
     /* initing mutex var to preserve syncing with threads*/
+    pthread_t thid[MAX_CLIENTS]; 
     pthread_mutex_init(&cth_lock, NULL);
 
-    sockfd = socket(AF_INET, SOCK_STREAM, 0); // declaring socket
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0); // declaring socket
     if (sockfd == -1) {
         perror("Failed to create socket");
         return 1;
@@ -90,13 +90,13 @@ int main(int argc, char** argv) {
     if (fl->host == 1) {
         // binding socket
         if (bind(sockfd, (SA*)&servaddr, sizeof(servaddr)) != 0) {
-            perror("Failed to bind socket");
+            perror("failed to bind socket");
             return 1;
         }
 
         // listening for a connection
         if (listen(sockfd, 5) != 0) {
-            perror("Failed to listen");
+            perror("failed to listen");
             return 1;
         }
 
@@ -125,7 +125,6 @@ int main(int argc, char** argv) {
 
             // accepting incoming connection
             clients[client_n].connfd = accept(sockfd, (SA*)&servaddr, &len);
-
             if (clients[client_n].connfd < 0) {
                 perror("Could not accept");
                 exit(1);
@@ -151,6 +150,7 @@ int main(int argc, char** argv) {
             pthread_join(thid[i], NULL);
         }
     }
+    // connecting as client
     else if (fl->host == 0) {
         // connecting to server
         if (connect(sockfd, (SA*)&servaddr, sizeof(servaddr)) != 0) {
@@ -166,11 +166,12 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    free(fl);
-    close(sockfd);
     for (int i = 0; i < MAX_CLIENTS; ++i) {
         close(clients[i].connfd);
     }
+
+    free(fl);
+    close(sockfd);
     return 0;
 }
 

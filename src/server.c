@@ -21,14 +21,6 @@ struct sockaddr_in cli;
 
 void handle_leave_alert(endpoint_t client) {
     pthread_mutex_lock(&cth_lock);
-
-    packet_t msg;
-    construct_message(&msg, "[-]", 0, 2, client);
-
-    for (int i = 0; i < MAX_CLIENTS; ++i) {
-        send(clients[i].connfd, (packet_t*)&msg, sizeof(msg), 0);
-    }
-
     avail[client.client_n] = 0;
     close(clients[client.client_n].connfd);
     pthread_mutex_unlock(&cth_lock);
@@ -45,7 +37,6 @@ void handle_join_alert(endpoint_t client) {
 }
 
 void* from_client(void* arg) {
-    // casting arg to client type
     endpoint_t client = *(endpoint_t*)arg;
     int connfd = client.connfd;
     char buffer[BUFF_SZ];
@@ -54,16 +45,15 @@ void* from_client(void* arg) {
 
     while (1) {
         
-        // ensuring the buffer in empty
         bzero(buffer, sizeof(buffer));
+
         // waitin to recieve mesasge from the client
-        int r = recv(connfd, (packet_t*)&msg, sizeof(msg), 0);
-        /* checking if the client sends nothing back,
-         * then it will terminate the connection
-         */
-        if (r == 0) {
+        if (recv(connfd, (packet_t*)&msg, sizeof(msg), 0) == 0) {
+            /* checking if the client sends nothing back,
+             * then it will terminate the connection
+             */
             fflush(stdout);
-            // handle_leave_alert(client);
+            handle_leave_alert(client);
             close(connfd);
             return NULL;
         }
@@ -76,9 +66,8 @@ void* from_client(void* arg) {
                     if (i == client.client_n || avail[i] == 0) {
                         continue;
                     }
-                    int r = send(clients[i].connfd, (packet_t*)&msg, sizeof(msg), 0);
-                    if (r == 0) {
-                        printf("Error sending\n");
+                    if (send(clients[i].connfd, (packet_t*)&msg, sizeof(msg), 0) == 0) {
+                        printf("error sending\n");
                     }
                 }
 
@@ -89,15 +78,15 @@ void* from_client(void* arg) {
                 fflush(stdout);
                 break;
             case 1:
-                // handling manuel messages from host
                 break;
             case 2:
                 break;
             case 3:
+                // handle dm
                 for (int i = 0; i < MAX_CLIENTS; ++i) {
                     if (strcmp(clients[i].nickname, msg.nickname_reciever) == 0) {
                         if (send(clients[i].connfd, (packet_t*)&msg, sizeof(msg), 0) == 0) {
-                            printf("Error sending\n");
+                            printf("error sending\n");
                         }
                     }
                 }
@@ -134,7 +123,7 @@ void* start_server(void* arg) {
         return NULL;
     }
     
-    // reciving client back with added nickname
+    // receiving client back with added nickname
     if (recv(connfd, (packet_t*)&msg, sizeof(msg), 0) == 0) {
         return NULL;
     }
@@ -186,16 +175,17 @@ void* start_server(void* arg) {
             for (int i = 0; i < MAX_CLIENTS; ++i) {
                 close(clients[i].connfd);
             }
+
+            close(connfd);
             return NULL;
         }
         else if (n > 0) {
-            // constructing and sending message
             packet_t msg;
             construct_message(&msg, buffer_inp_server, 0, 1, (endpoint_t)client); 
-            int r = send(connfd, (void*)&msg, sizeof(msg), 0);
-            if (r == 0) {
+            if (send(connfd, (void*)&msg, sizeof(msg), 0) == 0) {
                 return NULL;
             }
+
             bzero(buffer_inp_server, sizeof(buffer_inp_server));
         }
     }

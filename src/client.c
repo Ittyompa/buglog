@@ -20,12 +20,10 @@ short client_id;
 char nickname[32];
 
 void* from_server(void* arg) {
-    // casting argument to int pointer
     int sockfd = *(int*)arg;
     char buffer[BUFF_SZ];
     packet_t msg;
     while (1) {
-        // setting buffer to zero
         bzero(buffer, sizeof(buffer));
 
         // waiting to recieve message from server
@@ -33,18 +31,18 @@ void* from_server(void* arg) {
 
         char* current_time = get_current_time();
         switch (msg.type) {
-            // handle normal messages
             case 0:
+                // handle normal messages
                 printf("\33[2K\r"); // deleting current line in terminal
-                fflush(stdout); // flushing buffer
+                fflush(stdout); 
                 printf("[%s] <%s> %s\n", current_time, msg.client.nickname, msg.input); // printing out message and sender
                 printf("<%s> %s", nickname, buffer_inp_client);
                 fflush(stdout);
                 break;
             case 1:
                 // handling manuel messages from host
-                printf("\33[2K\r"); // deleting current line in terminal
-                fflush(stdout); // flushing buffer
+                printf("\33[2K\r"); 
+                fflush(stdout); 
                 printf("<host> %s\n", msg.input); // printing out message and sender
                 printf("<%s> %s", nickname, buffer_inp_client);
                 fflush(stdout);
@@ -52,15 +50,15 @@ void* from_server(void* arg) {
             case 2:
                 // handling join/leave alerts (removed)
                 printf("\33[2K\r"); // deleting current line in terminal
-                fflush(stdout); // flushing buffer
-                printf("%s\n", msg.input); // printing out message and sender
+                fflush(stdout); 
+                printf("%s\n", msg.input); 
                 printf("<%s> %s", nickname, buffer_inp_client);
                 fflush(stdout);
                 break;
             case 3:
                 printf("\33[2K\r"); // deleting current line in terminal
-                fflush(stdout); // flushing buffer
-                printf("\33[0;32m[%s] <%s>\33[0m %s\n", current_time, msg.client.nickname, msg.input); // printing out message and sender
+                fflush(stdout); 
+                printf("\33[0;32m[%s] <%s>\33[0m %s\n", current_time, msg.client.nickname, msg.input); 
                 printf("<%s> %s", nickname, buffer_inp_client);
                 fflush(stdout);
                 break;
@@ -78,7 +76,7 @@ void* from_server(void* arg) {
 int start_client(int sockfd) {
     packet_t msg;
     pthread_t thid;
-    int m;
+
     // waiting to recieve info about the client itself (id)
     if(recv(sockfd, (packet_t*)&msg, sizeof(msg), 0) == 0) {
         return 1;
@@ -106,8 +104,9 @@ int start_client(int sockfd) {
     setNonBlockingInput();
     srand(time(0));
 
+    int n;
     for (;;) {
-        m = 0;
+        n = 0;
         printf("\n<%s> ", client.nickname);
         fflush(stdout);
 
@@ -119,15 +118,14 @@ int start_client(int sockfd) {
                 break;
                 // chekcing if input is esc og backspace
             } else if (c == 0x8 || c == 0x7F) { 
-                if (m > 0) {
+                if (n > 0) {
                     // printing sequence to autobackspace
                     printf("\b \b"); 
-                    --m;
+                    --n;
                 }
             } else {
-                // printing out char
                 putchar(c); 
-                buffer_inp_client[m++] = c;
+                buffer_inp_client[n++] = c;
             }
         }
         
@@ -155,11 +153,12 @@ int start_client(int sockfd) {
 
             free_tokens(args, count);
         }
-        else if (m > 0) {
+        else if (n > 0) {
             // constructing and sending message
             construct_message(&msg, buffer_inp_client, client_id, 0, (endpoint_t )client);
             send(sockfd, (void*)&msg, sizeof(msg), 0);
         }
+
         bzero(buffer_inp_client, sizeof(buffer_inp_client));
     }
 

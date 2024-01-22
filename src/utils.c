@@ -10,8 +10,6 @@
 #include <unistd.h> 
 #include <termios.h>
 #include <pthread.h>
-#include <curl/curl.h>
-#include <jansson.h>
 #include <time.h>
 
 #include "utils.h"
