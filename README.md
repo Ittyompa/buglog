@@ -6,11 +6,6 @@
 Clara can be described as a simple distributed chatting service. It is a transparent network which allows Linux users to talk over the internet only using the terminal.
 
 
-## Authors
-
-- [@cadabaroo](https://www.github.com/cadabaroo)
-
-
 ## Features
 
 - User run.
