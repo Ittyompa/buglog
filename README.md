@@ -31,7 +31,7 @@ sudo pacman -S gcc
 
 ### Cloning from github
 ```bash
-  git clone https://github.com/cadabaroo/clara
+  git clone https://github.com/bampham/clara
   cd buglog
   ./build
 ```
